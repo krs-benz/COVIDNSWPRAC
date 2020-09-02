@@ -36,67 +36,8 @@ test_age<-read.csv("data/pcr_testing_table2_age_group.csv")
 ```{r}
 glimpse(conf_loc)
 ```
-```{r}
-glimpse(case_loc)
-```
-```{r}
-glimpse(case_age)
-```
-```{r}
-glimpse(test_loc)
-```
 
 
-```{r}
-glimpse(test_age)
-```
-```{r}
-test_age$age_group<-str_remove(test_age$age_group, "AgeGroup_")
-testage.count<-test_age %>%
-  group_by(age_group) %>%
-  summarise(frequency = n())
-
-```
-
-```{r}
-testage<-ggplot(testage.count, aes(x = age_group, y= frequency))+geom_histogram(stat = "identity")
-testage
-```
-
-
-```{r}
-case_age$age_group<-str_remove(case_age$age_group, "AgeGroup_")
-
-
-
-age.count<-case_age %>%
-  group_by(age_group) %>%
-  summarise(frequency = n())
-```
-```{r}
-glimpse(age.count)
-```
-
-
-
-```{r}
-factor(age.count$age_group)
-
-```
-```{r}
-age.ref<-age.count %>%
-  mutate(age_group = fct_relevel(age_group,"0-4", "5-9", "10-14","15-19","20-24", "25-29", "30-34", "35-39", "40-44", "45-49", "50-54", "55-59", "60-64", "65-69", "70+"))
-
-```
-
-
-
-```{r}
-
-
-age<-ggplot(age.ref, aes(x = age_group, y= frequency))+geom_histogram(stat = "identity")
-age
-```
 
 
 ```{r}
@@ -187,6 +128,71 @@ p1
 ```{r}
 p2
 ```
+
+
+```{r}
+glimpse(case_loc)
+```
+```{r}
+glimpse(test_loc)
+```
+
+
+
+
+```{r}
+glimpse(case_age)
+```
+```{r}
+case_age$age_group<-str_remove(case_age$age_group, "AgeGroup_")
+
+age.count<-case_age %>%
+  group_by(age_group) %>%
+  summarise(frequency = n())
+```
+```{r}
+glimpse(age.count)
+```
+
+
+
+```{r}
+factor(age.count$age_group)
+
+```
+```{r}
+age.ref<-age.count %>%
+  mutate(age_group = fct_relevel(age_group,"0-4", "5-9", "10-14","15-19","20-24", "25-29", "30-34", "35-39", "40-44", "45-49", "50-54", "55-59", "60-64", "65-69", "70+"))
+
+```
+
+
+
+```{r}
+
+age<-ggplot(age.ref, aes(x = age_group, y= frequency))+geom_histogram(stat = "identity")
+age
+
+```
+
+
+```{r}
+glimpse(test_age)
+```
+```{r}
+test_age$age_group<-str_remove(test_age$age_group, "AgeGroup_")
+testage.count<-test_age %>%
+  group_by(age_group) %>%
+  summarise(frequency = n())
+
+```
+
+```{r}
+testage<-ggplot(testage.count, aes(x = age_group, y= frequency))+geom_histogram(stat = "identity")
+testage
+```
+
+
 ```{r}
 leaflet() %>%
         addTiles()
