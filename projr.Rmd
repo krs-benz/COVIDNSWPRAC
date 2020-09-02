@@ -1,0 +1,194 @@
+---
+title: "projr rough"
+author: "bven"
+date: "27/08/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+```{r libs}
+library(dplyr)
+library(ggplot2)
+library(leaflet)
+library(shiny)
+library(gridExtra)
+library(viridis)
+library(stringr)
+library(forcats)
+```
+
+
+
+```{r }
+conf_loc<-read.csv("data/confirmed_cases_table4_location_likely_source.csv")
+case_loc<-read.csv("data/covid-19-contact-locations-dataset_09.01.csv")
+case_age<-read.csv("data/confirmed_cases_table2_age_group.csv")
+test_loc<-read.csv("data/pcr_testing_table1_location.csv")
+test_age<-read.csv("data/pcr_testing_table2_age_group.csv")
+
+```
+
+```{r}
+glimpse(conf_loc)
+```
+```{r}
+glimpse(case_loc)
+```
+```{r}
+glimpse(case_age)
+```
+```{r}
+glimpse(test_loc)
+```
+
+
+```{r}
+glimpse(test_age)
+```
+```{r}
+test_age$age_group<-str_remove(test_age$age_group, "AgeGroup_")
+testage.count<-test_age %>%
+  group_by(age_group) %>%
+  summarise(frequency = n())
+
+```
+
+```{r}
+testage<-ggplot(testage.count, aes(x = age_group, y= frequency))+geom_histogram(stat = "identity")
+testage
+```
+
+
+```{r}
+case_age$age_group<-str_remove(case_age$age_group, "AgeGroup_")
+
+
+
+age.count<-case_age %>%
+  group_by(age_group) %>%
+  summarise(frequency = n())
+```
+```{r}
+glimpse(age.count)
+```
+
+
+
+```{r}
+factor(age.count$age_group)
+
+```
+```{r}
+age.ref<-age.count %>%
+  mutate(age_group = fct_relevel(age_group,"0-4", "5-9", "10-14","15-19","20-24", "25-29", "30-34", "35-39", "40-44", "45-49", "50-54", "55-59", "60-64", "65-69", "70+"))
+
+```
+
+
+
+```{r}
+
+
+age<-ggplot(age.ref, aes(x = age_group, y= frequency))+geom_histogram(stat = "identity")
+age
+```
+
+
+```{r}
+p1<-ggplot(conf_loc, aes(x = postcode))+geom_histogram()
+p1
+```
+
+```{r}
+conf_loc$date<-as.Date((conf_loc$notification_date), "%d/%m/%Y")
+```
+```{r}
+format(conf_loc$date, "%Y-%m-%d")
+```
+
+
+
+```{r}
+date.count<-conf_loc %>%
+  group_by(date) %>%
+  summarise(frequency = n())
+```
+
+
+```{r}
+date.count
+```
+```{r}
+ggplot(data = date.count, aes(x = date, y = frequency)) + geom_bar(stat = "identity")
+```
+```{r}
+cumcount<-date.count%>% mutate(cmco = cumsum(frequency))  
+ggplot(data = cumcount, aes(x = date, y = cmco)) + geom_line() 
+```
+
+```{r}
+conf_loc$likely_source_of_infection[conf_loc$likely_source_of_infection == "Locally acquired - contact of a confirmed case and/or in a known cluster"]<-"LACONF"
+conf_loc$likely_source_of_infection[conf_loc$likely_source_of_infection == "Locally acquired - source not identified"]<-"LAUKN"
+```
+
+```{r}
+cause.count<-conf_loc %>%
+  group_by(likely_source_of_infection, date) %>%
+  summarise(count = n())
+```
+
+```{r}
+cause.count
+```
+
+
+
+```{r}
+ggplot(data = cause.count, aes(x = likely_source_of_infection, y = count)) + geom_bar(stat = "identity")
+```
+
+```{r}
+cause.count2<-conf_loc %>%
+  group_by(likely_source_of_infection) %>%
+  summarise(count = n())
+
+cause.count2
+
+```
+
+```{r}
+dvec<-conf_loc$date
+
+```
+```{r}
+conf_loc$week <- as.numeric(dvec-dvec[1]) %/% 7
+
+```
+```{r}
+cause.count3<-conf_loc %>%
+  group_by(likely_source_of_infection, week) %>%
+  summarise(count = n())
+```
+```{r}
+
+p1<-ggplot(cause.count, aes(x = likely_source_of_infection, y = date, fill = count)) + geom_tile(stat = "identity") +scale_fill_viridis(option = "plasma")
+p2<-ggplot(cause.count3, aes(x = likely_source_of_infection, y = week, fill = count)) + geom_tile(stat = "identity") +scale_fill_viridis(option = "plasma")
+
+```
+
+```{r}
+p1
+```
+```{r}
+p2
+```
+```{r}
+leaflet() %>%
+        addTiles()
+```
+
